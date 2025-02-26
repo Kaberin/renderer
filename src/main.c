@@ -1,9 +1,19 @@
 #include "stdio.h"
 #include "stdbool.h"
+#include "stdint.h"
 #include "SDL2/SDL.h"
+/*
+Colors in hexadecimal
+  A R G B
+0xFFFF0000
+*/
+int window_width = 800;
+int window_height = 600;
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
+uint32_t *color_buffer = NULL;
+
 bool is_running = false;
 
 bool initialize_window(void)
@@ -15,7 +25,7 @@ bool initialize_window(void)
         return false;
     };
 
-    window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_BORDERLESS);
+    window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_width, window_height, SDL_WINDOW_BORDERLESS);
     if (!window)
     {
         fprintf(stderr, "Failed to create window!\n");
@@ -33,6 +43,7 @@ bool initialize_window(void)
 
 void setup(void)
 {
+    color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
 }
 
 void process_input(void)
@@ -70,6 +81,16 @@ void render(void)
 
     SDL_RenderPresent(renderer);
 }
+
+void destroy_window(void)
+{
+    free(color_buffer);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
+    SDL_Quit();
+}
+
 int main(void)
 {
     is_running = initialize_window();
@@ -82,7 +103,7 @@ int main(void)
         update();
         render();
     }
-
+    destroy_window();
     printf("Renderer finished work!\n");
     return 0;
 }
