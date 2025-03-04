@@ -80,7 +80,7 @@ void draw_grid(uint32_t color)
     {
         for (int x = 0; x < window_width; x += 10)
         {
-            color_buffer[(y * window_width) + x] = color;
+            draw_pixel(x, y, color);
         }
     }
 }

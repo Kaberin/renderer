@@ -2,14 +2,37 @@
 #include "stdbool.h"
 #include "stdint.h"
 #include "display.h"
+#include "vector.h"
 
+#define N_POINTS 9 * 9 * 9
+
+vec3_t cube_points[N_POINTS];
+vec2_t projected_points[N_POINTS];
 bool is_running = false;
+
+vec3_t camera_poisition = {0, 0, -5};
+
+float fov_factor = 640;
 
 void setup(void)
 {
     printf("Setting up...\n");
     color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
     color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
+
+    int point_count = 0;
+
+    for (float x = -1; x <= 1; x += 0.25)
+    {
+        for (float y = -1; y <= 1; y += 0.25)
+        {
+            for (float z = -1; z <= 1; z += 0.25)
+            {
+                vec3_t new_point = {.x = x, .y = y, .z = z};
+                cube_points[point_count++] = new_point;
+            }
+        }
+    }
 }
 
 void process_input(void)
@@ -35,18 +58,35 @@ void process_input(void)
     }
 }
 
+vec2_t project(vec3_t point)
+{
+    vec2_t projected = {.x = point.x * fov_factor / point.z, .y = point.y * fov_factor / point.z};
+    return projected;
+}
+
 void update(void)
 {
+    for (int i = 0; i < N_POINTS; i++)
+    {
+        vec3_t point = cube_points[i];
+
+        point.z -= camera_poisition.z;
+
+        vec2_t projected_point = project(point);
+
+        projected_points[i] = projected_point;
+    }
 }
 
 void render(void)
 {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-
-    SDL_RenderClear(renderer);
-
     draw_grid(0xFF333333);
-    draw_rect(500, 300, 208, 80, 0xFF00FF00);
+    // draw_rect(500, 300, 208, 80, 0xFF00FF00);
+
+    for (int i = 0; i < N_POINTS; i++)
+    {
+        draw_rect((int)projected_points[i].x + window_width / 2, (int)projected_points[i].y + window_height / 2, 4, 4, 0xFFFF0000); // narrowing cast
+    }
 
     render_color_buffer();
     clear_color_buffer(0xFF000000);
