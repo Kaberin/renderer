@@ -1,5 +1,5 @@
 build:
-	gcc -Wall -std=c99 -lm ./src/*.c -o renderer -lSDL2main -lSDL2
+	gcc -Wall -std=c99 ./src/*.c -o renderer -lSDL2 -lm
 
 run:
 	./renderer
