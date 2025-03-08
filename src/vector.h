@@ -1,6 +1,6 @@
 #ifndef VECTOR_H
 #define VECTOR_h
-
+#pragma once
 typedef struct
 {
     float x;

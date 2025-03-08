@@ -1,5 +1,6 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
+#pragma once
 #include "SDL2/SDL.h"
 #include "stdint.h"
 #include "stdbool.h"
