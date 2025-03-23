@@ -10,8 +10,6 @@ int previous_frame_time = 0;
 
 vec3_t camera_poisition = {0, 0, -5};
 
-vec3_t cube_rotation = {.x = 0, .z = 0, .y = 0};
-
 float fov_factor = 640;
 
 float rotation = 0;
@@ -23,6 +21,8 @@ void setup(void)
     printf("Setting up...\n");
     color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
     color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
+
+    load_cube_mesh_data();
 }
 
 void process_input(void)
@@ -68,19 +68,20 @@ void update(void)
 
     previous_frame_time = SDL_GetTicks64();
 
-    cube_rotation.y += 0.01;
-    cube_rotation.x += 0.02;
-    cube_rotation.x += 0.005;
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.02;
+    mesh.rotation.z += 0.005;
 
     // loop all faces of mesh
-    for (int i = 0; i < N_MESH_FACES; ++i)
+    int num_faces = array_length(mesh.faces);
+    for (int i = 0; i < num_faces; ++i)
     {
-        face_t mesh_face = mesh_faces[i];
+        face_t mesh_face = mesh.faces[i];
 
         vec3_t face_vertcies[3];
-        face_vertcies[0] = mesh_vertices[mesh_face.a - 1];
-        face_vertcies[1] = mesh_vertices[mesh_face.b - 1];
-        face_vertcies[2] = mesh_vertices[mesh_face.c - 1];
+        face_vertcies[0] = mesh.vertices[mesh_face.a - 1];
+        face_vertcies[1] = mesh.vertices[mesh_face.b - 1];
+        face_vertcies[2] = mesh.vertices[mesh_face.c - 1];
 
         triangle_t projected_triangle;
 
@@ -89,9 +90,9 @@ void update(void)
         {
             vec3_t transformed_vertex = face_vertcies[j];
 
-            transformed_vertex = vec3_rotate_x(transformed_vertex, cube_rotation.x);
-            transformed_vertex = vec3_rotate_y(transformed_vertex, cube_rotation.y);
-            transformed_vertex = vec3_rotate_z(transformed_vertex, cube_rotation.z);
+            transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
+            transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
+            transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 
             transformed_vertex.z -= camera_poisition.z;
 
@@ -104,15 +105,11 @@ void update(void)
         }
 
         array_push(triangles_to_render, projected_triangle);
-
-        // triangles_to_render[i] = projected_triangle;
     }
 }
 
 void render(void)
 {
-    // draw_grid(0xFF333333);
-
     int num_triangles = array_length(triangles_to_render);
 
     for (int i = 0; i < num_triangles; i++)
@@ -132,6 +129,13 @@ void render(void)
     SDL_RenderPresent(renderer);
 }
 
+void free_resources(void)
+{
+    array_free(mesh.faces);
+    array_free(mesh.vertices);
+    free(color_buffer);
+}
+
 int main(void)
 {
     is_running = initialize_window();
@@ -145,6 +149,7 @@ int main(void)
         render();
     }
     destroy_window();
+    free_resources();
     printf("Renderer finished work!\n");
     return 0;
 }
