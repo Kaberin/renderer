@@ -8,7 +8,7 @@
 bool is_running = false;
 int previous_frame_time = 0;
 
-vec3_t camera_poisition = {0, 0, -5};
+vec3_t camera_poisition = {0, 0, 0};
 
 float fov_factor = 640;
 
@@ -79,8 +79,8 @@ void update(void)
     previous_frame_time = SDL_GetTicks64();
 
     mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.02;
-    mesh.rotation.z += 0.005;
+    mesh.rotation.y += 0.01;
+    mesh.rotation.z += 0.01;
 
     // loop all faces of mesh
     int num_faces = array_length(mesh.faces);
@@ -95,6 +95,7 @@ void update(void)
 
         triangle_t projected_triangle;
 
+        vec3_t transformed_vertices[3];
         // Loop all vertices and apply transformations
         for (int j = 0; j < 3; ++j)
         {
@@ -104,9 +105,28 @@ void update(void)
             transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
             transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 
-            transformed_vertex.z -= camera_poisition.z;
+            transformed_vertex.z += 5;
+            transformed_vertices[j] = transformed_vertex;
+        }
 
-            vec2_t projected_point = project(transformed_vertex);
+        // Backface culling
+        vec3_t vector_a = transformed_vertices[0];
+        vec3_t vector_b = transformed_vertices[1];
+        vec3_t vector_c = transformed_vertices[2];
+        vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+        vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+        vec3_t normal = vec3_cross(vector_ab, vector_ac);
+        vec3_t camera_ray = vec3_sub(camera_poisition, vector_a);
+
+        float dot_normal_camera = vec3_dot(normal, camera_ray);
+        if (dot_normal_camera < 0)
+        {
+            continue;
+        }
+
+        for (int j = 0; j < 3; ++j)
+        {
+            vec2_t projected_point = project(transformed_vertices[j]);
 
             projected_point.x += (window_width / 2);
             projected_point.y += (window_height / 2);
@@ -126,11 +146,11 @@ void render(void)
     {
         triangle_t triangle = triangles_to_render[i];
 
-        draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
-        draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
-        draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
+        draw_rect(triangle.points[0].x, triangle.points[0].y, 2, 2, 0xFF00FF00);
+        draw_rect(triangle.points[1].x, triangle.points[1].y, 2, 2, 0xFF00FF00);
+        draw_rect(triangle.points[2].x, triangle.points[2].y, 2, 2, 0xFF00FF00);
 
-        draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFF800080);
+        draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFF00FF00);
     }
     array_free(triangles_to_render);
 
