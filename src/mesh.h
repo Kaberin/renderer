@@ -3,6 +3,7 @@
 #pragma once
 #include "stdio.h"
 #include "triangle.h"
+#include "stdbool.h"
 // #include "vector.h"
 
 #define N_CUBE_VERTICES 8
@@ -21,5 +22,5 @@ typedef struct
 extern mesh_t mesh;
 
 void load_cube_mesh_data(void);
-
+void load_obj_file_data2(char *filename);
 #endif

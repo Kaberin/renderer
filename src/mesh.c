@@ -1,6 +1,6 @@
 #include "array.h"
 #include "mesh.h"
-
+#include "string.h"
 mesh_t mesh = {
     .vertices = NULL,
     .faces = NULL,
@@ -49,4 +49,93 @@ void load_cube_mesh_data(void)
     {
         array_push(mesh.faces, cube_faces[i]);
     }
+}
+/*
+Returns true if success
+ */
+
+void load_obj_file_data2(char *filename)
+{
+    FILE *file;
+    file = fopen(filename, "r");
+    char line[1024];
+
+    while (fgets(line, 1024, file))
+    {
+        if (strncmp(line, "v ", 2) == 0)
+        {
+            vec3_t vertex;
+            sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
+            array_push(mesh.vertices, vertex);
+        }
+
+        if (strncmp(line, "f ", 2) == 0)
+        {
+
+            face_t face;
+            int vertex_indices[3];
+            int texture_indices[3];
+            int normal_indices[3];
+            sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d",
+                   &vertex_indices[0],
+                   &texture_indices[0],
+                   &normal_indices[0],
+                   &vertex_indices[1],
+                   &texture_indices[1],
+                   &normal_indices[1],
+                   &vertex_indices[2],
+                   &texture_indices[2],
+                   &normal_indices[2]);
+
+            face.a = vertex_indices[0];
+            face.b = vertex_indices[1];
+            face.c = vertex_indices[2];
+
+            array_push(mesh.faces, face);
+        }
+    }
+
+    fclose(file);
+}
+
+bool load_obj_file_data(char *filename)
+{
+    printf("\n\nLoading .obj model... [%s]\n", filename);
+    FILE *fptr = NULL;
+    fptr = fopen(filename, "r");
+    if (fptr == NULL)
+    {
+        printf("Failed to open...\n");
+        return false;
+    }
+    printf("Opened successful...\n");
+    char c = '\0';
+    printf("Starting reading...\n");
+    while ((c = getc(fptr)) != EOF)
+    {
+
+        switch (c)
+        {
+        case 'v':
+        {
+            float v1 = 0, v2 = 0, v3 = 0;
+            fscanf(fptr, "%f %f %f", &v1, &v2, &v3);
+            vec3_t vertice = {.x = v1, .y = v2, .z = v3};
+            array_push(mesh.vertices, vertice);
+            break;
+        }
+        case 'f':
+        {
+            int i1 = 0, i2 = 0, i3 = 0;
+            int skip = 0;
+            fscanf(fptr, "%d/%d/%d %d/%d/%d %d/%d/%d", &i1, &skip, &skip, &i2, &skip, &skip, &i3, &skip, &skip);
+            face_t face = {.a = i1, .b = i2, .c = i3};
+            array_push(mesh.faces, face);
+            break;
+        }
+        }
+    }
+
+    fclose(fptr);
+    return true;
 }

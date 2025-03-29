@@ -22,7 +22,9 @@ void setup(void)
     color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
     color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
-    load_cube_mesh_data();
+    // load_cube_mesh_data();
+
+    load_obj_file_data2("/home/kaberin/Programming/SDL_course/assets/f22.obj");
 }
 
 void process_input(void)
@@ -40,6 +42,14 @@ void process_input(void)
             if (event.key.keysym.sym == SDLK_ESCAPE)
             {
                 is_running = false;
+            }
+            else if (event.key.keysym.sym == SDLK_DOWN)
+            {
+                mesh.rotation.y += 1;
+            }
+            else if (event.key.keysym.sym == SDLK_UP)
+            {
+                mesh.rotation.x += 1;
             }
             break;
         default:
