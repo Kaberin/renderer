@@ -24,7 +24,8 @@ void setup(void)
 
     // load_cube_mesh_data();
 
-    load_obj_file_data2("/home/kaberin/Programming/SDL_course/assets/f22.obj");
+    load_obj_file_data2("/home/kaberin/Programming/SDL_course/assets/cube.obj");
+    // load_bunny("/home/kaberin/Programming/SDL_course/assets/bunny.obj");
 }
 
 void process_input(void)
@@ -79,8 +80,8 @@ void update(void)
     previous_frame_time = SDL_GetTicks64();
 
     mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
-    mesh.rotation.z += 0.01;
+    mesh.rotation.y += 0.02;
+    mesh.rotation.z += 0.007;
 
     // loop all faces of mesh
     int num_faces = array_length(mesh.faces);
@@ -116,6 +117,9 @@ void update(void)
         vec3_t vector_ab = vec3_sub(vector_b, vector_a);
         vec3_t vector_ac = vec3_sub(vector_c, vector_a);
         vec3_t normal = vec3_cross(vector_ab, vector_ac);
+
+        vec3_normalize(&normal);
+
         vec3_t camera_ray = vec3_sub(camera_poisition, vector_a);
 
         float dot_normal_camera = vec3_dot(normal, camera_ray);
