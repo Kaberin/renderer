@@ -98,6 +98,32 @@ void load_obj_file_data2(char *filename)
     fclose(file);
 }
 
+void load_bunny(char *filename)
+{
+    FILE *file = NULL;
+    file = fopen(filename, "r");
+    char line[1024];
+
+    while (fgets(line, 1024, file))
+    {
+        if (strncmp(line, "v", 1) == 0)
+        {
+            vec3_t vertex;
+            sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
+            array_push(mesh.vertices, vertex);
+        }
+
+        if (strncmp(line, "f", 1) == 0)
+        {
+            face_t face;
+            sscanf(line, "f %d %d %d", &face.a, &face.b, &face.c);
+            array_push(mesh.faces, face);
+        }
+    }
+
+    fclose(file);
+}
+
 bool load_obj_file_data(char *filename)
 {
     printf("\n\nLoading .obj model... [%s]\n", filename);

@@ -23,4 +23,5 @@ extern mesh_t mesh;
 
 void load_cube_mesh_data(void);
 void load_obj_file_data2(char *filename);
+void load_bunny(char *filename);
 #endif
