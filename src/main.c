@@ -124,8 +124,6 @@ void update(void)
         face_vertcies[1] = mesh.vertices[mesh_face.b - 1];
         face_vertcies[2] = mesh.vertices[mesh_face.c - 1];
 
-        triangle_t projected_triangle;
-
         vec3_t transformed_vertices[3];
         // Loop all vertices and apply transformations
         for (int j = 0; j < 3; ++j)
@@ -159,15 +157,22 @@ void update(void)
             }
         }
 
+        vec2_t projected_points[3];
+
         for (int j = 0; j < 3; ++j)
         {
-            vec2_t projected_point = project(transformed_vertices[j]);
+            projected_points[j] = project(transformed_vertices[j]);
 
-            projected_point.x += (window_width / 2);
-            projected_point.y += (window_height / 2);
-
-            projected_triangle.points[j] = projected_point;
+            projected_points[j].x += (window_width / 2);
+            projected_points[j].y += (window_height / 2);
         }
+        triangle_t projected_triangle = {
+            .points = {
+                projected_points[0],
+                projected_points[1],
+                projected_points[2],
+            },
+            .color = mesh_face.color};
 
         array_push(triangles_to_render, projected_triangle);
     }
@@ -182,7 +187,7 @@ void render(void)
         triangle_t triangle = triangles_to_render[i];
         if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE)
         {
-            draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFF666666);
+            draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, triangle.color);
         }
         if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX || render_method == RENDER_FILL_TRIANGLE_WIRE)
         {

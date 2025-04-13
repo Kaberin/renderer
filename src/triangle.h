@@ -6,6 +6,7 @@
 typedef struct triangle_t
 {
     vec2_t points[3];
+    uint32_t color;
 } triangle_t;
 
 typedef struct face_t
