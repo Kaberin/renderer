@@ -24,9 +24,9 @@ void setup(void)
     color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
     color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
-    // load_cube_mesh_data();
+    load_cube_mesh_data();
 
-    load_obj_file_data2("/home/kaberin/Programming/SDL_course/assets/cube.obj");
+    // load_obj_file_data2("/home/kaberin/Programming/SDL_course/assets/cube.obj");
     // load_bunny("/home/kaberin/Programming/SDL_course/assets/bunny.obj");
 }
 
