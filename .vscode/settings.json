@@ -8,6 +8,7 @@
         "mesh.h": "c",
         "triangle.h": "c",
         "array": "cpp",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "sdl.h": "c"
     }
 }

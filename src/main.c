@@ -11,10 +11,12 @@ int previous_frame_time = 0;
 vec3_t camera_poisition = {0, 0, 0};
 
 float fov_factor = 640;
-
 float rotation = 0;
 
 triangle_t *triangles_to_render = NULL;
+
+CullMethod cull_method = CULL_BACKFACE;
+RenderMethod render_method = RENDER_WIRE;
 
 void setup(void)
 {
@@ -40,17 +42,45 @@ void process_input(void)
             is_running = false;
             break;
         case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_ESCAPE)
+            SDL_KeyCode key = event.key.keysym.sym;
+            if (key == SDLK_ESCAPE)
             {
                 is_running = false;
             }
-            else if (event.key.keysym.sym == SDLK_DOWN)
+            else if (key == SDLK_DOWN)
             {
                 mesh.rotation.y += 1;
             }
-            else if (event.key.keysym.sym == SDLK_UP)
+            else if (key == SDLK_UP)
             {
                 mesh.rotation.x += 1;
+            }
+            else if (key == SDLK_1)
+            {
+                render_method = RENDER_WIRE_VERTEX;
+            }
+            else if (key == SDLK_2)
+            {
+                render_method = RENDER_WIRE;
+            }
+            else if (key == SDLK_3)
+            {
+                render_method = RENDER_FILL_TRIANGLE;
+            }
+            else if (key == SDLK_4)
+            {
+                render_method = RENDER_FILL_TRIANGLE_WIRE;
+            }
+            else if (key == SDLK_c)
+            {
+                if (cull_method == CULL_BACKFACE)
+                {
+                    cull_method = CULL_NONE;
+                }
+                else
+                {
+                    cull_method = CULL_BACKFACE;
+                }
             }
             break;
         default:
@@ -111,21 +141,22 @@ void update(void)
         }
 
         // Backface culling
-        vec3_t vector_a = transformed_vertices[0];
-        vec3_t vector_b = transformed_vertices[1];
-        vec3_t vector_c = transformed_vertices[2];
-        vec3_t vector_ab = vec3_sub(vector_b, vector_a);
-        vec3_t vector_ac = vec3_sub(vector_c, vector_a);
-        vec3_t normal = vec3_cross(vector_ab, vector_ac);
-
-        vec3_normalize(&normal);
-
-        vec3_t camera_ray = vec3_sub(camera_poisition, vector_a);
-
-        float dot_normal_camera = vec3_dot(normal, camera_ray);
-        if (dot_normal_camera < 0)
+        if (cull_method == CULL_BACKFACE)
         {
-            continue;
+            vec3_t vector_a = transformed_vertices[0];
+            vec3_t vector_b = transformed_vertices[1];
+            vec3_t vector_c = transformed_vertices[2];
+            vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+            vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+            vec3_t normal = vec3_cross(vector_ab, vector_ac);
+            vec3_normalize(&normal);
+
+            vec3_t camera_ray = vec3_sub(camera_poisition, vector_a);
+            float dot_normal_camera = vec3_dot(normal, camera_ray);
+            if (dot_normal_camera < 0)
+            {
+                continue;
+            }
         }
 
         for (int j = 0; j < 3; ++j)
@@ -149,13 +180,20 @@ void render(void)
     for (int i = 0; i < num_triangles; i++)
     {
         triangle_t triangle = triangles_to_render[i];
-
-        draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFF00FF00);
-        draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFF00FF00);
-        draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFF00FF00);
-
-        draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFF666666);
-        draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFFFFFFFF);
+        if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE)
+        {
+            draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFF666666);
+        }
+        if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX || render_method == RENDER_FILL_TRIANGLE_WIRE)
+        {
+            draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFFFFFFFF);
+        }
+        if (render_method == RENDER_WIRE_VERTEX)
+        {
+            draw_rect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFF00FF00);
+            draw_rect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFF00FF00);
+            draw_rect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFF00FF00);
+        }
     }
 
     // draw_triangle(300, 100, 50, 400, 500, 700, 0xFF00FF00);
