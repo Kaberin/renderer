@@ -54,7 +54,7 @@ void load_cube_mesh_data(void)
 Returns true if success
  */
 
-void load_obj_file_data2(char *filename)
+void load_obj_file_data(char *filename)
 {
     FILE *file;
     file = fopen(filename, "r");
@@ -90,7 +90,7 @@ void load_obj_file_data2(char *filename)
             face.a = vertex_indices[0];
             face.b = vertex_indices[1];
             face.c = vertex_indices[2];
-
+            face.color = 0xFF808080; // ⁡⁢⁣⁢Ц͟В͟Е͟Т П͟О͟В͟Е͟Р͟Х͟Н͟О͟С͟Т͟И З͟А͟Х͟А͟Р͟Д͟К͟О͟Д͟И͟Л Т͟У͟Т⁡ !!!
             array_push(mesh.faces, face);
         }
     }
@@ -124,44 +124,44 @@ void load_bunny(char *filename)
     fclose(file);
 }
 
-bool load_obj_file_data(char *filename)
-{
-    printf("\n\nLoading .obj model... [%s]\n", filename);
-    FILE *fptr = NULL;
-    fptr = fopen(filename, "r");
-    if (fptr == NULL)
-    {
-        printf("Failed to open...\n");
-        return false;
-    }
-    printf("Opened successful...\n");
-    char c = '\0';
-    printf("Starting reading...\n");
-    while ((c = getc(fptr)) != EOF)
-    {
+// bool load_obj_file_data2(char *filename)
+// {
+//     printf("\n\nLoading .obj model... [%s]\n", filename);
+//     FILE *fptr = NULL;
+//     fptr = fopen(filename, "r");
+//     if (fptr == NULL)
+//     {
+//         printf("Failed to open...\n");
+//         return false;
+//     }
+//     printf("Opened successful...\n");
+//     char c = '\0';
+//     printf("Starting reading...\n");
+//     while ((c = getc(fptr)) != EOF)
+//     {
 
-        switch (c)
-        {
-        case 'v':
-        {
-            float v1 = 0, v2 = 0, v3 = 0;
-            fscanf(fptr, "%f %f %f", &v1, &v2, &v3);
-            vec3_t vertice = {.x = v1, .y = v2, .z = v3};
-            array_push(mesh.vertices, vertice);
-            break;
-        }
-        case 'f':
-        {
-            int i1 = 0, i2 = 0, i3 = 0;
-            int skip = 0;
-            fscanf(fptr, "%d/%d/%d %d/%d/%d %d/%d/%d", &i1, &skip, &skip, &i2, &skip, &skip, &i3, &skip, &skip);
-            face_t face = {.a = i1, .b = i2, .c = i3};
-            array_push(mesh.faces, face);
-            break;
-        }
-        }
-    }
+//         switch (c)
+//         {
+//         case 'v':
+//         {
+//             float v1 = 0, v2 = 0, v3 = 0;
+//             fscanf(fptr, "%f %f %f", &v1, &v2, &v3);
+//             vec3_t vertice = {.x = v1, .y = v2, .z = v3};
+//             array_push(mesh.vertices, vertice);
+//             break;
+//         }
+//         case 'f':
+//         {
+//             int i1 = 0, i2 = 0, i3 = 0;
+//             int skip = 0;
+//             fscanf(fptr, "%d/%d/%d %d/%d/%d %d/%d/%d", &i1, &skip, &skip, &i2, &skip, &skip, &i3, &skip, &skip);
+//             face_t face = {.a = i1, .b = i2, .c = i3};
+//             array_push(mesh.faces, face);
+//             break;
+//         }
+//         }
+//     }
 
-    fclose(fptr);
-    return true;
-}
+//     fclose(fptr);
+//     return true;
+// }
