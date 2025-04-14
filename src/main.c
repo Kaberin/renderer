@@ -95,6 +95,75 @@ vec2_t project(vec3_t point)
     return projected;
 }
 
+// ⁣⁣‍Своя реализация quicksort, но решил использовать qsort из стандартной библиотеки⁡
+void sort_by_depth(triangle_t *triangles)
+{
+    int size = array_length(triangles);
+    if (size == 0 || size == 1)
+    {
+        return;
+    }
+    int midpoint = size / 2;
+    triangle_t mid_element = triangles[midpoint];
+    triangle_t *less = NULL;
+    triangle_t *equal = NULL;
+    triangle_t *more = NULL;
+    for (int i = 0; i < size; i++)
+    {
+        if (triangles[i].avg_depth < mid_element.avg_depth)
+        {
+            array_push(less, triangles[i]);
+        }
+        else if (triangles[i].avg_depth > mid_element.avg_depth)
+        {
+            array_push(more, triangles[i]);
+        }
+        else
+        {
+            array_push(equal, triangles[i]);
+        }
+    }
+    sort_by_depth(less);
+    sort_by_depth(more);
+
+    int less_size = array_length(less);
+    int equal_size = array_length(equal);
+    int more_size = array_length(more);
+
+    int index = 0;
+    for (int i = 0; i < more_size; i++)
+    {
+        triangles[index++] = more[i];
+    }
+    for (int i = 0; i < equal_size; i++)
+    {
+        triangles[index++] = equal[i];
+    }
+    for (int i = 0; i < less_size; i++)
+    {
+        triangles[index++] = less[i];
+    }
+}
+
+/// @brief Компаратор для triangle_t.avg_depth
+/// @param a Забей
+/// @param b Забей
+/// @return
+int depth_compare(const void *a, const void *b)
+{
+    float d1 = ((triangle_t *)a)->avg_depth;
+    float d2 = ((triangle_t *)b)->avg_depth;
+    if (d1 > d2)
+    {
+        return -1;
+    }
+    if (d1 < d2)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 void update(void)
 {
 
@@ -182,6 +251,10 @@ void update(void)
 
         array_push(triangles_to_render, projected_triangle);
     }
+
+    // sort triangles_to_render by avg_depth (painter algorythm)
+    // sort_by_depth(triangles_to_render);
+    qsort(triangles_to_render, array_length(triangles_to_render), sizeof(triangle_t), depth_compare);
 }
 
 void render(void)
@@ -191,6 +264,7 @@ void render(void)
     for (int i = 0; i < num_triangles; i++)
     {
         triangle_t triangle = triangles_to_render[i];
+
         if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE)
         {
             draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, triangle.color);
