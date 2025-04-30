@@ -179,12 +179,16 @@ void update(void)
 
     previous_frame_time = SDL_GetTicks64();
 
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.02;
-    mesh.rotation.z += 0.007;
+    // mesh.rotation.x += 0.01;
+    // mesh.rotation.y += 0.02;
+    // mesh.rotation.z += 0.007;
     mesh.scale.x += 0.002;
+    mesh.scale.y += 0.001;
+    mesh.translation.x += 0.01;
+    mesh.translation.z = 5;
 
     mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+    mat4_t translation_matrix = mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
 
     // loop all faces of mesh
     int num_faces = array_length(mesh.faces);
@@ -205,13 +209,14 @@ void update(void)
 
             // Use a matrix to scale original vertex
             transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
+            transformed_vertex = mat4_mul_vec4(translation_matrix, transformed_vertex);
             // vec3_t tr_v = vec3_from_vec4(transformed_vertex);
             // tr_v = vec3_rotate_x(tr_v, mesh.rotation.x);
             // tr_v = vec3_rotate_y(tr_v, mesh.rotation.y);
             // tr_v = vec3_rotate_z(tr_v, mesh.rotation.z);
             // transformed_vertex = vec4_from_vec3(tr_v);
 
-            transformed_vertex.z += 5;
+            // transformed_vertex.z += 5;
             transformed_vertices[j] = transformed_vertex;
         }
 
