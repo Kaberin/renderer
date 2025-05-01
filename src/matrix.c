@@ -93,3 +93,40 @@ mat4_t mat4_mul_mat4(mat4_t m1, mat4_t m2)
 
     return m;
 }
+
+mat4_t make_zeros()
+{
+    mat4_t m = {{
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+    }};
+    return m;
+}
+
+mat4_t mat4_make_perspective(float fov, float ascpect, float znear, float zfar)
+{
+    mat4_t m = make_zeros();
+    m.m[0][0] = ascpect * (1 / tan(fov / 2));
+    m.m[1][1] = 1 / tan(fov / 2);
+    m.m[2][2] = zfar / (zfar - znear);
+    m.m[2][3] = -zfar * znear / (zfar - znear);
+    m.m[3][2] = 1.0;
+    return m;
+}
+
+vec4_t mat4_mul_vec4_project(mat4_t mat_proj, vec4_t v)
+{
+    vec4_t result = mat4_mul_vec4(mat_proj, v);
+
+    // Clipping here
+
+    if (result.w != 0.0)
+    {
+        result.x /= result.w;
+        result.y /= result.w;
+        result.z /= result.w;
+    }
+    return result;
+}
