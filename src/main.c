@@ -5,6 +5,9 @@
 #include "vector.h"
 #include "mesh.h"
 #include "array.h"
+#include "matrix.h"
+
+#define M_PI 3.14159265359
 bool is_running = false;
 int previous_frame_time = 0;
 
@@ -17,16 +20,22 @@ triangle_t *triangles_to_render = NULL;
 
 CullMethod cull_method = CULL_BACKFACE;
 RenderMethod render_method = RENDER_WIRE;
-
+mat4_t proj_matrix;
 void setup(void)
 {
     printf("Setting up...\n");
     color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
     color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
+    float fov = M_PI / 3;
+    float aspect = (float)window_height / (float)window_width;
+    float znear = 0.1;
+    float zfar = 100.0;
+    proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
+
     // load_cube_mesh_data();
 
-    load_obj_file_data("/home/kaberin/Programming/SDL_course/assets/cube.obj");
+    load_obj_file_data("/home/kaberin/Programming/SDL_course/assets/f22.obj");
     // load_bunny("/home/kaberin/Programming/SDL_course/assets/bunny.obj");
 }
 
@@ -89,11 +98,11 @@ void process_input(void)
     }
 }
 
-vec2_t project(vec3_t point)
-{
-    vec2_t projected = {.x = point.x * fov_factor / point.z, .y = point.y * fov_factor / point.z};
-    return projected;
-}
+// vec2_t project(vec3_t point)
+// {
+//     vec2_t projected = {.x = point.x * fov_factor / point.z, .y = point.y * fov_factor / point.z};
+//     return projected;
+// }
 
 // ⁣⁣‍Своя реализация quicksort, но решил использовать qsort из стандартной библиотеки⁡
 void sort_by_depth(triangle_t *triangles)
@@ -178,10 +187,20 @@ void update(void)
 
     previous_frame_time = SDL_GetTicks64();
 
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.02;
-    mesh.rotation.z += 0.007;
+    // mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.01;
+    // mesh.rotation.z += 0.01;
+    // mesh.scale.x += 0.002;
+    // mesh.scale.y += 0.001;
+    mesh.rotation.x = 3;
+    mesh.translation.y = 1;
+    mesh.translation.z = 5;
 
+    mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+    mat4_t rotation_x_matrix = mat4_make_rotation_x(mesh.rotation.x);
+    mat4_t rotation_y_matrix = mat4_make_rotation_y(mesh.rotation.y);
+    mat4_t rotation_z_matrix = mat4_make_rotation_z(mesh.rotation.z);
+    mat4_t translation_matrix = mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
     // loop all faces of mesh
     int num_faces = array_length(mesh.faces);
     for (int i = 0; i < num_faces; ++i)
@@ -193,26 +212,29 @@ void update(void)
         face_vertcies[1] = mesh.vertices[mesh_face.b - 1];
         face_vertcies[2] = mesh.vertices[mesh_face.c - 1];
 
-        vec3_t transformed_vertices[3];
+        vec4_t transformed_vertices[3];
         // Loop all vertices and apply transformations
         for (int j = 0; j < 3; ++j)
         {
-            vec3_t transformed_vertex = face_vertcies[j];
+            vec4_t transformed_vertex = vec4_from_vec3(face_vertcies[j]);
 
-            transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
-            transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
-            transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+            mat4_t world_matrix = mat4_identity();
+            world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
+            world_matrix = mat4_mul_mat4(rotation_x_matrix, world_matrix);
+            world_matrix = mat4_mul_mat4(rotation_y_matrix, world_matrix);
+            world_matrix = mat4_mul_mat4(rotation_z_matrix, world_matrix);
+            world_matrix = mat4_mul_mat4(translation_matrix, world_matrix);
 
-            transformed_vertex.z += 5;
+            transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
             transformed_vertices[j] = transformed_vertex;
         }
 
         // Backface culling
         if (cull_method == CULL_BACKFACE)
         {
-            vec3_t vector_a = transformed_vertices[0];
-            vec3_t vector_b = transformed_vertices[1];
-            vec3_t vector_c = transformed_vertices[2];
+            vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+            vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+            vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
             vec3_t vector_ab = vec3_sub(vector_b, vector_a);
             vec3_t vector_ac = vec3_sub(vector_c, vector_a);
             vec3_t normal = vec3_cross(vector_ab, vector_ac);
@@ -226,12 +248,18 @@ void update(void)
             }
         }
 
-        vec2_t projected_points[3];
+        vec4_t projected_points[3];
 
         for (int j = 0; j < 3; ++j)
         {
-            projected_points[j] = project(transformed_vertices[j]);
+            // projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
+            projected_points[j] = mat4_mul_vec4_project(proj_matrix, transformed_vertices[j]);
 
+            // NDC to Viewport transform
+            // Scale into view
+            projected_points[j].x *= (window_width / 2);
+            projected_points[j].y *= (window_height / 2);
+            // Translate to middle of screen
             projected_points[j].x += (window_width / 2);
             projected_points[j].y += (window_height / 2);
         }
