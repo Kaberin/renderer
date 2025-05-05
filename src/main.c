@@ -7,7 +7,8 @@
 #include "array.h"
 #include "matrix.h"
 #include "light.h"
-
+#include "texture.h"
+#include "triangle.h"
 #define M_PI 3.14159265359
 bool is_running = false;
 int previous_frame_time = 0;
@@ -35,9 +36,12 @@ void setup(void)
     float zfar = 100.0;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-    // load_cube_mesh_data();
+    mesh_texture = (uint32_t *)REDBRICK_TEXTURE;
+    texture_width = 64;
+    texture_height = 64;
 
-    load_obj_file_data("/home/kaberin/Programming/SDL_course/assets/f22.obj");
+    load_cube_mesh_data();
+    // load_obj_file_data("/home/kaberin/Programming/SDL_course/assets/cube.obj");
     // load_bunny("/home/kaberin/Programming/SDL_course/assets/bunny.obj");
 }
 
@@ -81,6 +85,14 @@ void process_input(void)
             else if (key == SDLK_4)
             {
                 render_method = RENDER_FILL_TRIANGLE_WIRE;
+            }
+            else if (key == SDLK_5)
+            {
+                render_method = RENDER_TEXTURED;
+            }
+            else if (key == SDLK_6)
+            {
+                render_method = RENDER_TEXTURED_WIRE;
             }
             else if (key == SDLK_c)
             {
@@ -189,8 +201,8 @@ void update(void)
 
     previous_frame_time = SDL_GetTicks64();
 
-    // mesh.rotation.x += 0.01;
-    // mesh.rotation.y += 0.01;
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
     // mesh.scale.y += 0.001;
@@ -304,6 +316,11 @@ void update(void)
                 },
             .color = triangle_color,
             .avg_depth = avg_depth,
+            .texcoords = {
+                {mesh_face.a_uv.u, mesh_face.a_uv.v},
+                {mesh_face.b_uv.u, mesh_face.b_uv.v},
+                {mesh_face.c_uv.u, mesh_face.c_uv.v},
+            },
         };
 
         array_push(triangles_to_render, projected_triangle);
@@ -322,19 +339,27 @@ void render(void)
     {
         triangle_t triangle = triangles_to_render[i];
 
+        if (render_method == RENDER_TEXTURED || render_method == RENDER_TEXTURED_WIRE)
+        {
+            draw_textured_triangle(triangle.points[0].x, triangle.points[0].y, triangle.texcoords[0].u, triangle.texcoords[0].v,
+                                   triangle.points[1].x, triangle.points[1].y, triangle.texcoords[1].u, triangle.texcoords[1].v,
+                                   triangle.points[2].x, triangle.points[2].y, triangle.texcoords[2].u, triangle.texcoords[2].v,
+                                   mesh_texture);
+        }
+
         if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE)
         {
             draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, triangle.color);
         }
-        if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX || render_method == RENDER_FILL_TRIANGLE_WIRE)
+        if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX || render_method == RENDER_FILL_TRIANGLE_WIRE || render_method == RENDER_TEXTURED_WIRE)
         {
             draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFFFFFFFF);
         }
         if (render_method == RENDER_WIRE_VERTEX)
         {
-            draw_rect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFF00FF00);
-            draw_rect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFF00FF00);
-            draw_rect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFF00FF00);
+            draw_rect(triangle.points[0].x - 3, triangle.points[0].y - 3, 4, 4, 0xFF00FF00);
+            draw_rect(triangle.points[1].x - 3, triangle.points[1].y - 3, 4, 4, 0xFF00FF00);
+            draw_rect(triangle.points[2].x - 3, triangle.points[2].y - 3, 4, 4, 0xFF00FF00);
         }
     }
 
