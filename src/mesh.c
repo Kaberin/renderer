@@ -92,7 +92,7 @@ void load_obj_file_data(char *filename)
             face.a = vertex_indices[0];
             face.b = vertex_indices[1];
             face.c = vertex_indices[2];
-            face.color = 0xFF808080; // ⁡⁢⁣⁢Ц͟В͟Е͟Т П͟О͟В͟Е͟Р͟Х͟Н͟О͟С͟Т͟И З͟А͟Х͟А͟Р͟Д͟К͟О͟Д͟И͟Л Т͟У͟Т⁡ !!!
+            face.color = 0xFFFFFFFF; // ⁡⁢⁣⁢Ц͟В͟Е͟Т П͟О͟В͟Е͟Р͟Х͟Н͟О͟С͟Т͟И З͟А͟Х͟А͟Р͟Д͟К͟О͟Д͟И͟Л Т͟У͟Т⁡ !!!
             array_push(mesh.faces, face);
         }
     }
@@ -119,6 +119,7 @@ void load_bunny(char *filename)
         {
             face_t face;
             sscanf(line, "f %d %d %d", &face.a, &face.b, &face.c);
+            face.color = 0xFFFFFFFF;
             array_push(mesh.faces, face);
         }
     }

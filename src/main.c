@@ -6,6 +6,7 @@
 #include "mesh.h"
 #include "array.h"
 #include "matrix.h"
+#include "light.h"
 
 #define M_PI 3.14159265359
 bool is_running = false;
@@ -21,6 +22,7 @@ triangle_t *triangles_to_render = NULL;
 CullMethod cull_method = CULL_BACKFACE;
 RenderMethod render_method = RENDER_WIRE;
 mat4_t proj_matrix;
+
 void setup(void)
 {
     printf("Setting up...\n");
@@ -29,7 +31,7 @@ void setup(void)
 
     float fov = M_PI / 3;
     float aspect = (float)window_height / (float)window_width;
-    float znear = 0.1;
+    float znear = 0.08;
     float zfar = 100.0;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
@@ -188,12 +190,13 @@ void update(void)
     previous_frame_time = SDL_GetTicks64();
 
     // mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
-    // mesh.rotation.z += 0.01;
+    // mesh.rotation.y += 0.01;
+    mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
     // mesh.scale.y += 0.001;
-    mesh.rotation.x = 3;
-    mesh.translation.y = 1;
+
+    // mesh.rotation.x = M_PI;
+    // mesh.translation.y = 1;
     mesh.translation.z = 5;
 
     mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
@@ -228,18 +231,17 @@ void update(void)
             transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
             transformed_vertices[j] = transformed_vertex;
         }
-
+        // Calculating normal for current face
+        vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+        vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+        vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
+        vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+        vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+        vec3_t normal = vec3_cross(vector_ab, vector_ac);
+        vec3_normalize(&normal);
         // Backface culling
         if (cull_method == CULL_BACKFACE)
         {
-            vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
-            vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
-            vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
-            vec3_t vector_ab = vec3_sub(vector_b, vector_a);
-            vec3_t vector_ac = vec3_sub(vector_c, vector_a);
-            vec3_t normal = vec3_cross(vector_ab, vector_ac);
-            vec3_normalize(&normal);
-
             vec3_t camera_ray = vec3_sub(camera_poisition, vector_a);
             float dot_normal_camera = vec3_dot(normal, camera_ray);
             if (dot_normal_camera < 0)
@@ -247,6 +249,23 @@ void update(void)
                 continue;
             }
         }
+
+        // printf("Degree is %f\n", degree);
+        // getchar();
+        // if (light_intensity_factor < 0)
+        // {
+        //     if (light_intensity_factor < 0.5)
+        //     {
+        //         mesh_face.color = light_apply_intensity(mesh_face.color, fabs(light_intensity_factor));
+        //     }
+        // }
+        // else if (light_intensity_factor == 1)
+        // {
+        //     mesh_face.color = 0xFF000000;
+        // }
+        // else
+        // {
+        // }
 
         vec4_t projected_points[3];
 
@@ -259,12 +278,22 @@ void update(void)
             // Scale into view
             projected_points[j].x *= (window_width / 2);
             projected_points[j].y *= (window_height / 2);
+
+            // invert y-values
+            projected_points[j].y *= -1;
+
             // Translate to middle of screen
             projected_points[j].x += (window_width / 2);
             projected_points[j].y += (window_height / 2);
         }
 
         float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3;
+
+        // Flat shading
+
+        // vec3_normalize(&light.direction);
+        float light_intensity_factor = -vec3_dot(light.direction, normal);
+        uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
 
         triangle_t projected_triangle = {
             .points =
@@ -273,7 +302,7 @@ void update(void)
                     {projected_points[1].x, projected_points[1].y},
                     {projected_points[2].x, projected_points[2].y},
                 },
-            .color = mesh_face.color,
+            .color = triangle_color,
             .avg_depth = avg_depth,
         };
 
