@@ -119,6 +119,7 @@ void load_bunny(char *filename)
         {
             face_t face;
             sscanf(line, "f %d %d %d", &face.a, &face.b, &face.c);
+            face.color = 0xFFFFFFFF;
             array_push(mesh.faces, face);
         }
     }

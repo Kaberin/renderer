@@ -31,13 +31,13 @@ void setup(void)
 
     float fov = M_PI / 3;
     float aspect = (float)window_height / (float)window_width;
-    float znear = 0.1;
+    float znear = 0.08;
     float zfar = 100.0;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
     // load_cube_mesh_data();
 
-    load_obj_file_data("/home/kaberin/Programming/SDL_course/assets/cube.obj");
+    load_obj_file_data("/home/kaberin/Programming/SDL_course/assets/f22.obj");
     // load_bunny("/home/kaberin/Programming/SDL_course/assets/bunny.obj");
 }
 
@@ -189,12 +189,13 @@ void update(void)
 
     previous_frame_time = SDL_GetTicks64();
 
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
+    // mesh.rotation.x += 0.01;
+    // mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
     // mesh.scale.y += 0.001;
-    // mesh.rotation.x = 3;
+
+    // mesh.rotation.x = M_PI;
     // mesh.translation.y = 1;
     mesh.translation.z = 5;
 
@@ -277,6 +278,10 @@ void update(void)
             // Scale into view
             projected_points[j].x *= (window_width / 2);
             projected_points[j].y *= (window_height / 2);
+
+            // invert y-values
+            projected_points[j].y *= -1;
+
             // Translate to middle of screen
             projected_points[j].x += (window_width / 2);
             projected_points[j].y += (window_height / 2);
