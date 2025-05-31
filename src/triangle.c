@@ -1,6 +1,6 @@
 #include "triangle.h"
 #include "display.h"
-void int_swap(int *x, int *y)
+void int_swap(int* x, int* y)
 {
     int temp = *x;
     *x = *y;
@@ -82,4 +82,20 @@ void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32
         return;
     }
     // fill_flat_top_triangle();
+};
+
+void draw_textured_triangle(int x0,
+                            int y0,
+                            float u0,
+                            float v0,
+                            int x1,
+                            int y1,
+                            float u1,
+                            float v1,
+                            int x2,
+                            int y2,
+                            float u2,
+                            float v2,
+                            uint32_t* texture) {
+
 };

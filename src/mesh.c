@@ -1,5 +1,5 @@
-#include "array.h"
 #include "mesh.h"
+#include "array.h"
 #include "string.h"
 mesh_t mesh = {
     .vertices = NULL,
@@ -10,35 +10,29 @@ mesh_t mesh = {
 };
 
 vec3_t cube_vertices[N_CUBE_VERTICES] = {
-    {.x = -1, .y = -1, .z = -1},
-    {.x = -1, .y = 1, .z = -1},
-    {.x = 1, .y = 1, .z = -1},
-    {.x = 1, .y = -1, .z = -1},
-    {.x = 1, .y = 1, .z = 1},
-    {.x = 1, .y = -1, .z = 1},
-    {.x = -1, .y = 1, .z = 1},
-    {.x = -1, .y = -1, .z = 1},
+    {.x = -1, .y = -1, .z = -1}, {.x = -1, .y = 1, .z = -1}, {.x = 1, .y = 1, .z = -1}, {.x = 1, .y = -1, .z = -1},
+    {.x = 1, .y = 1, .z = 1},    {.x = 1, .y = -1, .z = 1},  {.x = -1, .y = 1, .z = 1}, {.x = -1, .y = -1, .z = 1},
 };
 
 face_t cube_faces[N_CUBE_FACES] = {
     // front
-    {.a = 1, .b = 2, .c = 3},
-    {.a = 1, .b = 3, .c = 4},
+    {.a = 1, .b = 2, .c = 3, .a_uv = {0, 0}, .b_uv = {0, 1}, .c_uv = {1, 1}},
+    {.a = 1, .b = 3, .c = 4, .a_uv = {0, 0}, .b_uv = {1, 1}, .c_uv = {1, 0}},
     // right
-    {.a = 4, .b = 3, .c = 5},
-    {.a = 4, .b = 5, .c = 6},
+    {.a = 4, .b = 3, .c = 5, .a_uv = {0, 0}, .b_uv = {0, 1}, .c_uv = {1, 1}},
+    {.a = 4, .b = 5, .c = 6, .a_uv = {0, 0}, .b_uv = {1, 1}, .c_uv = {1, 0}},
     // back
-    {.a = 6, .b = 5, .c = 7},
-    {.a = 6, .b = 7, .c = 8},
+    {.a = 6, .b = 5, .c = 7, .a_uv = {0, 0}, .b_uv = {0, 1}, .c_uv = {1, 1}},
+    {.a = 6, .b = 7, .c = 8, .a_uv = {0, 0}, .b_uv = {1, 1}, .c_uv = {1, 0}},
     // left
-    {.a = 8, .b = 7, .c = 2},
-    {.a = 8, .b = 2, .c = 1},
+    {.a = 8, .b = 7, .c = 2, .a_uv = {0, 0}, .b_uv = {0, 1}, .c_uv = {1, 1}},
+    {.a = 8, .b = 2, .c = 1, .a_uv = {0, 0}, .b_uv = {1, 1}, .c_uv = {1, 0}},
     // top
-    {.a = 2, .b = 7, .c = 5},
-    {.a = 2, .b = 5, .c = 3},
+    {.a = 2, .b = 7, .c = 5, .a_uv = {0, 0}, .b_uv = {0, 1}, .c_uv = {1, 1}},
+    {.a = 2, .b = 5, .c = 3, .a_uv = {0, 0}, .b_uv = {1, 1}, .c_uv = {1, 0}},
     // bottom
-    {.a = 6, .b = 8, .c = 1},
-    {.a = 6, .b = 1, .c = 4},
+    {.a = 6, .b = 8, .c = 1, .a_uv = {0, 0}, .b_uv = {0, 1}, .c_uv = {1, 1}},
+    {.a = 6, .b = 1, .c = 4, .a_uv = {0, 0}, .b_uv = {1, 1}, .c_uv = {1, 0}},
 };
 
 void load_cube_mesh_data(void)
@@ -49,6 +43,9 @@ void load_cube_mesh_data(void)
     }
     for (int i = 0; i < N_CUBE_FACES; i++)
     {
+        cube_faces[i].color = 0xFFFFFFFF; // ⁡⁢⁣⁢Ц͟В͟Е͟Т П͟О͟В͟Е͟Р͟Х͟Н͟О͟С͟Т͟И
+                                          // З͟А͟Х͟А͟Р͟Д͟К͟О͟Д͟И͟Л Т͟У͟Т⁡
+                                          // !!!
         array_push(mesh.faces, cube_faces[i]);
     }
 }
@@ -56,9 +53,9 @@ void load_cube_mesh_data(void)
 Returns true if success
  */
 
-void load_obj_file_data(char *filename)
+void load_obj_file_data(char* filename)
 {
-    FILE *file;
+    FILE* file;
     file = fopen(filename, "r");
     char line[1024];
 
@@ -78,21 +75,16 @@ void load_obj_file_data(char *filename)
             int vertex_indices[3];
             int texture_indices[3];
             int normal_indices[3];
-            sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d",
-                   &vertex_indices[0],
-                   &texture_indices[0],
-                   &normal_indices[0],
-                   &vertex_indices[1],
-                   &texture_indices[1],
-                   &normal_indices[1],
-                   &vertex_indices[2],
-                   &texture_indices[2],
+            sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", &vertex_indices[0], &texture_indices[0], &normal_indices[0],
+                   &vertex_indices[1], &texture_indices[1], &normal_indices[1], &vertex_indices[2], &texture_indices[2],
                    &normal_indices[2]);
 
             face.a = vertex_indices[0];
             face.b = vertex_indices[1];
             face.c = vertex_indices[2];
-            face.color = 0xFFFFFFFF; // ⁡⁢⁣⁢Ц͟В͟Е͟Т П͟О͟В͟Е͟Р͟Х͟Н͟О͟С͟Т͟И З͟А͟Х͟А͟Р͟Д͟К͟О͟Д͟И͟Л Т͟У͟Т⁡ !!!
+            face.color = 0xFFFFFFFF; // ⁡⁢⁣⁢Ц͟В͟Е͟Т П͟О͟В͟Е͟Р͟Х͟Н͟О͟С͟Т͟И
+                                     // З͟А͟Х͟А͟Р͟Д͟К͟О͟Д͟И͟Л Т͟У͟Т⁡
+                                     // !!!
             array_push(mesh.faces, face);
         }
     }
@@ -100,9 +92,9 @@ void load_obj_file_data(char *filename)
     fclose(file);
 }
 
-void load_bunny(char *filename)
+void load_bunny(char* filename)
 {
-    FILE *file = NULL;
+    FILE* file = NULL;
     file = fopen(filename, "r");
     char line[1024];
 
