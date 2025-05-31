@@ -1,12 +1,12 @@
-#include "stdio.h"
+#include "array.h"
+#include "display.h"
+#include "light.h"
+#include "matrix.h"
+#include "mesh.h"
 #include "stdbool.h"
 #include "stdint.h"
-#include "display.h"
+#include "stdio.h"
 #include "vector.h"
-#include "mesh.h"
-#include "array.h"
-#include "matrix.h"
-#include "light.h"
 
 #define M_PI 3.14159265359
 bool is_running = false;
@@ -17,7 +17,7 @@ vec3_t camera_poisition = {0, 0, 0};
 float fov_factor = 640;
 float rotation = 0;
 
-triangle_t *triangles_to_render = NULL;
+triangle_t* triangles_to_render = NULL;
 
 CullMethod cull_method = CULL_BACKFACE;
 RenderMethod render_method = RENDER_WIRE;
@@ -26,8 +26,9 @@ mat4_t proj_matrix;
 void setup(void)
 {
     printf("Setting up...\n");
-    color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
-    color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
+    color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * window_width * window_height);
+    color_buffer_texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
     float fov = M_PI / 3;
     float aspect = (float)window_height / (float)window_width;
@@ -37,7 +38,7 @@ void setup(void)
 
     // load_cube_mesh_data();
 
-    load_obj_file_data("/home/kaberin/Programming/SDL_course/assets/f22.obj");
+    load_obj_file_data("/home/kaberin/prog/renderer/assets/f22.obj");
     // load_bunny("/home/kaberin/Programming/SDL_course/assets/bunny.obj");
 }
 
@@ -106,8 +107,9 @@ void process_input(void)
 //     return projected;
 // }
 
-// ⁣⁣‍Своя реализация quicksort, но решил использовать qsort из стандартной библиотеки⁡
-void sort_by_depth(triangle_t *triangles)
+// ⁣⁣‍Своя реализация quicksort, но решил использовать qsort из
+// стандартной библиотеки⁡
+void sort_by_depth(triangle_t* triangles)
 {
     int size = array_length(triangles);
     if (size == 0 || size == 1)
@@ -116,9 +118,9 @@ void sort_by_depth(triangle_t *triangles)
     }
     int midpoint = size / 2;
     triangle_t mid_element = triangles[midpoint];
-    triangle_t *less = NULL;
-    triangle_t *equal = NULL;
-    triangle_t *more = NULL;
+    triangle_t* less = NULL;
+    triangle_t* equal = NULL;
+    triangle_t* more = NULL;
     for (int i = 0; i < size; i++)
     {
         if (triangles[i].avg_depth < mid_element.avg_depth)
@@ -160,10 +162,10 @@ void sort_by_depth(triangle_t *triangles)
 /// @param a Забей
 /// @param b Забей
 /// @return
-int depth_compare(const void *a, const void *b)
+int depth_compare(const void* a, const void* b)
 {
-    float d1 = ((triangle_t *)a)->avg_depth;
-    float d2 = ((triangle_t *)b)->avg_depth;
+    float d1 = ((triangle_t*)a)->avg_depth;
+    float d2 = ((triangle_t*)b)->avg_depth;
     if (d1 > d2)
     {
         return -1;
@@ -189,8 +191,8 @@ void update(void)
 
     previous_frame_time = SDL_GetTicks64();
 
-    // mesh.rotation.x += 0.01;
-    // mesh.rotation.y += 0.01;
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
     // mesh.scale.y += 0.001;
@@ -324,11 +326,14 @@ void render(void)
 
         if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE)
         {
-            draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, triangle.color);
+            draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y,
+                                 triangle.points[2].x, triangle.points[2].y, triangle.color);
         }
-        if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX || render_method == RENDER_FILL_TRIANGLE_WIRE)
+        if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX ||
+            render_method == RENDER_FILL_TRIANGLE_WIRE)
         {
-            draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFFFFFFFF);
+            draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y,
+                          triangle.points[2].x, triangle.points[2].y, 0xFFFFFFFF);
         }
         if (render_method == RENDER_WIRE_VERTEX)
         {
