@@ -38,7 +38,7 @@ void setup(void)
 
     // load_cube_mesh_data();
 
-    load_obj_file_data("/home/kaberin/prog/renderer/assets/f22.obj");
+    load_obj_file_data("/home/kaberin/prog/renderer/assets/cube.obj");
     // load_bunny("/home/kaberin/Programming/SDL_course/assets/bunny.obj");
 }
 
