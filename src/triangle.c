@@ -1,11 +1,6 @@
 #include "triangle.h"
 #include "display.h"
-void int_swap(int* x, int* y)
-{
-    int temp = *x;
-    *x = *y;
-    *y = temp;
-}
+#include "swap.h"
 
 void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
 {
@@ -83,6 +78,103 @@ void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32
     }
     // fill_flat_top_triangle();
 };
+////////////////////////////////////
+// Render bottom part of triangle //
+////////////////////////////////////
+void draw_textured_flat_top_triangle(int x0,
+                                     int y0,
+                                     float u0,
+                                     float v0,
+                                     int x1,
+                                     int y1,
+                                     float u1,
+                                     float v1,
+                                     int x2,
+                                     int y2,
+                                     float u2,
+                                     float v2,
+                                     uint32_t* texture)
+{
+
+    float inv_slope_1 = 0;
+    float inv_slope_2 = 0;
+
+    if ((y1 - y0) != 0)
+    {
+        inv_slope_1 = (float)(x1 - x0) / (y1 - y0);
+    }
+    if ((y2 - y0) != 0)
+    {
+        inv_slope_2 = (float)(x2 - x0) / (y2 - y0);
+    }
+    float x_start = x0;
+    float x_end = x0;
+    for (int y = y0; y <= y1; y++)
+    {
+        int x_s = (int)x_start;
+        int x_e = (int)x_end;
+
+        if (x_s > x_e)
+        {
+            int_swap(&x_s, &x_e);
+        }
+        for (int x = x_s; x < x_e; x++)
+        {
+            draw_pixel(x, y, (x % 2 == 0 && y % 2 == 0) ? 0xFFFF00FF : 0xFF000000);
+        }
+        x_start += inv_slope_1;
+        x_end += inv_slope_2;
+    }
+}
+///////////////////////////////////
+// Render upper part of triangle //
+///////////////////////////////////
+void draw_textured_flat_bottom_triangle(int x0,
+                                        int y0,
+                                        float u0,
+                                        float v0,
+                                        int x1,
+                                        int y1,
+                                        float u1,
+                                        float v1,
+                                        int x2,
+                                        int y2,
+                                        float u2,
+                                        float v2,
+                                        uint32_t* texture)
+{
+    float inv_slope_1 = 0;
+    float inv_slope_2 = 0;
+
+    if ((y2 - y1) != 0)
+    {
+        inv_slope_1 = (float)(x2 - x1) / (y2 - y1);
+    }
+    if ((y2 - y0) != 0)
+    {
+        inv_slope_2 = (float)(x2 - x0) / (y2 - y0);
+    }
+
+    float x_start = x2;
+    float x_end = x2;
+
+    for (int y = y2; y >= y1; y--)
+    {
+        int x_s = (int)x_start;
+        int x_e = (int)x_end;
+
+        if (x_e < x_s)
+        {
+            int_swap(&x_s, &x_e);
+        }
+        for (int x = x_s; x <= x_e; x++)
+        {
+            draw_pixel(x, y, (x % 2 == 0 && y % 2 == 0) ? 0xFFFF00FF : 0xFF000000);
+        }
+        x_start -= inv_slope_1;
+        x_end -= inv_slope_2;
+    }
+}
 
 void draw_textured_triangle(int x0,
                             int y0,
@@ -96,6 +188,42 @@ void draw_textured_triangle(int x0,
                             int y2,
                             float u2,
                             float v2,
-                            uint32_t* texture) {
+                            uint32_t* texture)
+{
+    if (y0 > y1)
+    {
+        int_swap(&y0, &y1);
+        int_swap(&x0, &x1);
+        float_swap(&u0, &u1);
+        float_swap(&v0, &v1);
+    }
+    if (y1 > y2)
+    {
+        int_swap(&y1, &y2);
+        int_swap(&x1, &x2);
+        float_swap(&u1, &u2);
+        float_swap(&v1, &v2);
+    }
+    if (y0 > y1)
+    {
+        int_swap(&y0, &y1);
+        int_swap(&x0, &x1);
+        float_swap(&u0, &u1);
+        float_swap(&v0, &v1);
+    }
 
+    if (y0 == y1)
+    {
+        draw_textured_flat_bottom_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+        return;
+    }
+    if (y1 == y2)
+    {
+        draw_textured_flat_top_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+        return;
+    }
+
+    draw_textured_flat_bottom_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+
+    draw_textured_flat_top_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
 };
