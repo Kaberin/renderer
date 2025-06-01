@@ -189,7 +189,6 @@ int depth_compare(const void* a, const void* b)
 
 void update(void)
 {
-
     triangles_to_render = NULL;
 
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks64() - previous_frame_time);
@@ -206,7 +205,7 @@ void update(void)
     mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
     // mesh.scale.y += 0.001;
-
+    // mesh.translation.x += 0.001;
     // mesh.rotation.x = M_PI;
     // mesh.translation.y = 1;
     mesh.translation.z = 5;
@@ -318,7 +317,7 @@ void update(void)
                 },
             .texcoords = {{mesh_face.a_uv.u, mesh_face.a_uv.v},
                           {mesh_face.b_uv.u, mesh_face.b_uv.v},
-                          {mesh_face.b_uv.u, mesh_face.b_uv.v}},
+                          {mesh_face.c_uv.u, mesh_face.c_uv.v}},
             .color = triangle_color,
             .avg_depth = avg_depth,
         };
@@ -341,45 +340,26 @@ void render(void)
 
         if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE)
         {
-
-            draw_filled_triangle(triangle.points[0].x,
-                                 triangle.points[0].y,
-                                 triangle.points[1].x,
-                                 triangle.points[1].y,
-                                 triangle.points[2].x,
-                                 triangle.points[2].y,
-                                 triangle.color);
+            draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y,
+                                 triangle.points[2].x, triangle.points[2].y, triangle.color);
         }
 
         // draw textured triangle
         if (render_method == RENDER_TEXTURED || render_method == RENDER_TEXTURED_WIRE)
         {
             // TODO: draw_textured_triangle(...)
-            draw_textured_triangle(triangle.points[0].x,
-                                   triangle.points[0].y,
-                                   triangle.texcoords[0].u,
-                                   triangle.texcoords[0].v,
-                                   triangle.points[1].x,
-                                   triangle.points[1].y,
-                                   triangle.texcoords[1].u,
-                                   triangle.texcoords[1].v,
-                                   triangle.points[2].x,
-                                   triangle.points[2].y,
-                                   triangle.texcoords[2].u,
-                                   triangle.texcoords[2].v,
+            draw_textured_triangle(triangle.points[0].x, triangle.points[0].y, triangle.texcoords[0].u,
+                                   triangle.texcoords[0].v, triangle.points[1].x, triangle.points[1].y,
+                                   triangle.texcoords[1].u, triangle.texcoords[1].v, triangle.points[2].x,
+                                   triangle.points[2].y, triangle.texcoords[2].u, triangle.texcoords[2].v,
                                    mesh_texture);
         }
 
         if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX ||
             render_method == RENDER_FILL_TRIANGLE_WIRE || render_method == RENDER_TEXTURED_WIRE)
         {
-            draw_triangle(triangle.points[0].x,
-                          triangle.points[0].y,
-                          triangle.points[1].x,
-                          triangle.points[1].y,
-                          triangle.points[2].x,
-                          triangle.points[2].y,
-                          0xFFFFFFFF);
+            draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y,
+                          triangle.points[2].x, triangle.points[2].y, 0xFFFFFFFF);
         }
         if (render_method == RENDER_WIRE_VERTEX)
         {
@@ -408,6 +388,7 @@ void free_resources(void)
 
 int main(void)
 {
+
     is_running = initialize_window();
 
     setup();
