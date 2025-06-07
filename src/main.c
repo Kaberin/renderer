@@ -6,8 +6,9 @@
 #include "stdbool.h"
 #include "stdint.h"
 #include "stdio.h"
+#include "texture.h"
+#include "triangle.h"
 #include "vector.h"
-
 #define M_PI 3.14159265359
 bool is_running = false;
 int previous_frame_time = 0;
@@ -29,16 +30,16 @@ void setup(void)
     color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * window_width * window_height);
     color_buffer_texture =
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
-
     float fov = M_PI / 3;
     float aspect = (float)window_height / (float)window_width;
     float znear = 0.08;
     float zfar = 100.0;
+    mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-    // load_cube_mesh_data();
+    load_cube_mesh_data();
 
-    load_obj_file_data("/home/kaberin/prog/renderer/assets/cube.obj");
+    // load_obj_file_data("/home/kaberin/prog/renderer/assets/cube.obj");
     // load_bunny("/home/kaberin/Programming/SDL_course/assets/bunny.obj");
 }
 
@@ -83,6 +84,14 @@ void process_input(void)
             {
                 render_method = RENDER_FILL_TRIANGLE_WIRE;
             }
+            else if (key == SDLK_5)
+            {
+                render_method = RENDER_TEXTURED;
+            }
+            else if (key == SDLK_6)
+            {
+                render_method = RENDER_TEXTURED_WIRE;
+            }
             else if (key == SDLK_c)
             {
                 if (cull_method == CULL_BACKFACE)
@@ -103,12 +112,13 @@ void process_input(void)
 
 // vec2_t project(vec3_t point)
 // {
-//     vec2_t projected = {.x = point.x * fov_factor / point.z, .y = point.y * fov_factor / point.z};
-//     return projected;
+//     vec2_t projected = {.x = point.x * fov_factor / point.z, .y = point.y *
+//     fov_factor / point.z}; return projected;
 // }
 
-// ⁣⁣‍Своя реализация quicksort, но решил использовать qsort из
-// стандартной библиотеки⁡
+// ⁣⁣‍Своя реализация quicksort, но решил
+// использовать qsort из стандартной
+// библиотеки⁡
 void sort_by_depth(triangle_t* triangles)
 {
     int size = array_length(triangles);
@@ -179,7 +189,6 @@ int depth_compare(const void* a, const void* b)
 
 void update(void)
 {
-
     triangles_to_render = NULL;
 
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks64() - previous_frame_time);
@@ -196,7 +205,7 @@ void update(void)
     mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
     // mesh.scale.y += 0.001;
-
+    // mesh.translation.x += 0.001;
     // mesh.rotation.x = M_PI;
     // mesh.translation.y = 1;
     mesh.translation.z = 5;
@@ -258,7 +267,8 @@ void update(void)
         // {
         //     if (light_intensity_factor < 0.5)
         //     {
-        //         mesh_face.color = light_apply_intensity(mesh_face.color, fabs(light_intensity_factor));
+        //         mesh_face.color = light_apply_intensity(mesh_face.color,
+        //         fabs(light_intensity_factor));
         //     }
         // }
         // else if (light_intensity_factor == 1)
@@ -273,7 +283,8 @@ void update(void)
 
         for (int j = 0; j < 3; ++j)
         {
-            // projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
+            // projected_points[j] =
+            // project(vec3_from_vec4(transformed_vertices[j]));
             projected_points[j] = mat4_mul_vec4_project(proj_matrix, transformed_vertices[j]);
 
             // NDC to Viewport transform
@@ -304,6 +315,9 @@ void update(void)
                     {projected_points[1].x, projected_points[1].y},
                     {projected_points[2].x, projected_points[2].y},
                 },
+            .texcoords = {{mesh_face.a_uv.u, mesh_face.a_uv.v},
+                          {mesh_face.b_uv.u, mesh_face.b_uv.v},
+                          {mesh_face.c_uv.u, mesh_face.c_uv.v}},
             .color = triangle_color,
             .avg_depth = avg_depth,
         };
@@ -329,8 +343,20 @@ void render(void)
             draw_filled_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y,
                                  triangle.points[2].x, triangle.points[2].y, triangle.color);
         }
+
+        // draw textured triangle
+        if (render_method == RENDER_TEXTURED || render_method == RENDER_TEXTURED_WIRE)
+        {
+            // TODO: draw_textured_triangle(...)
+            draw_textured_triangle(triangle.points[0].x, triangle.points[0].y, triangle.texcoords[0].u,
+                                   triangle.texcoords[0].v, triangle.points[1].x, triangle.points[1].y,
+                                   triangle.texcoords[1].u, triangle.texcoords[1].v, triangle.points[2].x,
+                                   triangle.points[2].y, triangle.texcoords[2].u, triangle.texcoords[2].v,
+                                   mesh_texture);
+        }
+
         if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX ||
-            render_method == RENDER_FILL_TRIANGLE_WIRE)
+            render_method == RENDER_FILL_TRIANGLE_WIRE || render_method == RENDER_TEXTURED_WIRE)
         {
             draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y,
                           triangle.points[2].x, triangle.points[2].y, 0xFFFFFFFF);
@@ -362,6 +388,7 @@ void free_resources(void)
 
 int main(void)
 {
+
     is_running = initialize_window();
 
     setup();

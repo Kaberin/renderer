@@ -1,10 +1,10 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 #pragma once
-#include "triangle.h"
 #include "SDL2/SDL.h"
-#include "stdint.h"
 #include "stdbool.h"
+#include "stdint.h"
+#include "triangle.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME 1000 / FPS
@@ -20,16 +20,18 @@ typedef enum
     RENDER_WIRE,
     RENDER_WIRE_VERTEX,
     RENDER_FILL_TRIANGLE,
-    RENDER_FILL_TRIANGLE_WIRE
+    RENDER_FILL_TRIANGLE_WIRE,
+    RENDER_TEXTURED,
+    RENDER_TEXTURED_WIRE,
 } RenderMethod;
 
 extern int window_width;
 extern int window_height;
 
-extern SDL_Window *window;
-extern SDL_Renderer *renderer;
-extern SDL_Texture *color_buffer_texture;
-extern uint32_t *color_buffer;
+extern SDL_Window* window;
+extern SDL_Renderer* renderer;
+extern SDL_Texture* color_buffer_texture;
+extern uint32_t* color_buffer;
 
 bool initialize_window(void);
 void destroy_window(void);
