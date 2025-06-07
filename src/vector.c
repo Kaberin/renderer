@@ -55,9 +55,7 @@ vec2_t vec2_sub(vec2_t a, vec2_t b)
 
 vec2_t vec2_mul(vec2_t a, float factor)
 {
-    vec2_t res = {
-        .x = a.x * factor,
-        .y = a.y * factor};
+    vec2_t res = {.x = a.x * factor, .y = a.y * factor};
     return res;
 }
 vec2_t vec2_div(vec2_t a, float factor)
@@ -66,9 +64,7 @@ vec2_t vec2_div(vec2_t a, float factor)
     {
         return a;
     }
-    vec2_t res = {
-        .x = a.x / factor,
-        .y = a.y / factor};
+    vec2_t res = {.x = a.x / factor, .y = a.y / factor};
     return res;
 }
 
@@ -77,13 +73,18 @@ float vec2_dot(vec2_t a, vec2_t b)
     return a.x * b.x + a.y * b.y;
 };
 
-void vec2_normalize(vec2_t *v)
+void vec2_normalize(vec2_t* v)
 {
     double length = sqrt(v->x * v->x + v->y * v->y);
     v->x /= length;
     v->y /= length;
 }
 
+vec2_t vec2_from_vec4(vec4_t v)
+{
+    vec2_t res = {v.x, v.y};
+    return res;
+}
 // vec3 functions
 float vec3_length(vec3_t v)
 {
@@ -147,7 +148,7 @@ float vec3_dot(vec3_t a, vec3_t b)
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-void vec3_normalize(vec3_t *v)
+void vec3_normalize(vec3_t* v)
 {
     double length = sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
     v->x /= length;

@@ -87,7 +87,8 @@ mat4_t mat4_mul_mat4(mat4_t m1, mat4_t m2)
     {
         for (int j = 0; j < 4; j++)
         {
-            m.m[i][j] = m1.m[i][0] * m2.m[0][j] + m1.m[i][1] * m2.m[1][j] + m1.m[i][2] * m2.m[2][j] + m1.m[i][3] * m2.m[3][j];
+            m.m[i][j] =
+                m1.m[i][0] * m2.m[0][j] + m1.m[i][1] * m2.m[1][j] + m1.m[i][2] * m2.m[2][j] + m1.m[i][3] * m2.m[3][j];
         }
     }
 

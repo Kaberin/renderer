@@ -200,9 +200,9 @@ void update(void)
 
     previous_frame_time = SDL_GetTicks64();
 
-    mesh.rotation.x += 0.01;
+    // mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.01;
-    mesh.rotation.z += 0.01;
+    // mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
     // mesh.scale.y += 0.001;
     // mesh.translation.x += 0.001;
@@ -260,25 +260,6 @@ void update(void)
                 continue;
             }
         }
-
-        // printf("Degree is %f\n", degree);
-        // getchar();
-        // if (light_intensity_factor < 0)
-        // {
-        //     if (light_intensity_factor < 0.5)
-        //     {
-        //         mesh_face.color = light_apply_intensity(mesh_face.color,
-        //         fabs(light_intensity_factor));
-        //     }
-        // }
-        // else if (light_intensity_factor == 1)
-        // {
-        //     mesh_face.color = 0xFF000000;
-        // }
-        // else
-        // {
-        // }
-
         vec4_t projected_points[3];
 
         for (int j = 0; j < 3; ++j)
@@ -311,9 +292,9 @@ void update(void)
         triangle_t projected_triangle = {
             .points =
                 {
-                    {projected_points[0].x, projected_points[0].y},
-                    {projected_points[1].x, projected_points[1].y},
-                    {projected_points[2].x, projected_points[2].y},
+                    {projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w},
+                    {projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w},
+                    {projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w},
                 },
             .texcoords = {{mesh_face.a_uv.u, mesh_face.a_uv.v},
                           {mesh_face.b_uv.u, mesh_face.b_uv.v},
@@ -348,11 +329,12 @@ void render(void)
         if (render_method == RENDER_TEXTURED || render_method == RENDER_TEXTURED_WIRE)
         {
             // TODO: draw_textured_triangle(...)
-            draw_textured_triangle(triangle.points[0].x, triangle.points[0].y, triangle.texcoords[0].u,
-                                   triangle.texcoords[0].v, triangle.points[1].x, triangle.points[1].y,
-                                   triangle.texcoords[1].u, triangle.texcoords[1].v, triangle.points[2].x,
-                                   triangle.points[2].y, triangle.texcoords[2].u, triangle.texcoords[2].v,
-                                   mesh_texture);
+            draw_textured_triangle(
+                triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w,
+                triangle.texcoords[0].u, triangle.texcoords[0].v, triangle.points[1].x, triangle.points[1].y,
+                triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,
+                triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w,
+                triangle.texcoords[2].u, triangle.texcoords[2].v, mesh_texture);
         }
 
         if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX ||
